@@ -50676,6 +50676,13 @@ func schema_openshift_api_operator_v1_NetworkSpec(ref common.ReferenceCallback) 
 							Ref:         ref("github.com/openshift/api/operator/v1.NetworkMigration"),
 						},
 					},
+					"advancedRouting": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AdvancedRouting enables support for additional routing capabilities, like BGP. When set, it triggers the rollout of the necessary components, including but not limited to FFR-k8s, enabling the use of these routing capabilities for the machine network. Upstream operators, like MetalLB operator, requiring these capabilities may rely or automatically set this flag. Network plugins may either not leverage any advanced routing capability related to this setting, may honor this configuration without any aditional specific configuration or, like ovn-kubernetes, require additional enablement through their own specific configuration. Refer to their respective documentation and configuration options. Allowed values are \"Enabled\", \"Disabled\" and ommited. When omitted, this means the user has no opinion and the platform is left to choose reasonable defaults. These defaults are subject to change over time. The current default is \"Disabled\".",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 				Required: []string{"managementState", "clusterNetwork", "serviceNetwork", "defaultNetwork"},
 			},
@@ -51504,6 +51511,13 @@ func schema_openshift_api_operator_v1_OVNKubernetesConfig(ref common.ReferenceCa
 						SchemaProps: spec.SchemaProps{
 							Description: "ipv6 allows users to configure IP settings for IPv6 connections. When ommitted, this means no opinions and the default configuration is used. Check individual fields within ipv4 for details of default values.",
 							Ref:         ref("github.com/openshift/api/operator/v1.IPv6OVNKubernetesConfig"),
+						},
+					},
+					"routeAdvertisements": {
+						SchemaProps: spec.SchemaProps{
+							Description: "routeAdvertisements determines the capability of advertising cluster network routes with BGP. This capability is configured through the ovn-kubernetes RouteAdvertisements CRD. Requires global network AdvancedRouting to be enabled. Allowed values are \"Enabled\", \"Disabled\" and ommited. When omitted, this means the user has no opinion and the platform is left to choose reasonable defaults. These defaults are subject to change over time. The current default is \"Disabled\".",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},

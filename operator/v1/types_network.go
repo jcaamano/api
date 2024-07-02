@@ -53,6 +53,7 @@ type NetworkList struct {
 
 // NetworkSpec is the top-level network configuration object.
 // +kubebuilder:validation:XValidation:rule="!has(self.defaultNetwork) || !has(self.defaultNetwork.ovnKubernetesConfig) || !has(self.defaultNetwork.ovnKubernetesConfig.gatewayConfig) || !has(self.defaultNetwork.ovnKubernetesConfig.gatewayConfig.ipForwarding) || self.defaultNetwork.ovnKubernetesConfig.gatewayConfig.ipForwarding == oldSelf.defaultNetwork.ovnKubernetesConfig.gatewayConfig.ipForwarding || self.defaultNetwork.ovnKubernetesConfig.gatewayConfig.ipForwarding == 'Restricted' || self.defaultNetwork.ovnKubernetesConfig.gatewayConfig.ipForwarding == 'Global'",message="invalid value for IPForwarding, valid values are 'Restricted' or 'Global'"
+// +openshift:validation:FeatureGateAwareXValidation:featureGate=BGP,rule="self.advancedRouting == 'Enabled' || !has(self.defaultNetwork.ovnKubernetesConfig) || self.defaultNetwork.ovnKubernetesConfig.routeAdvertisements != 'Enabled'",message="RouteAdvertisements cannot be Enabled if AdvancedRouting is not Enabled"
 type NetworkSpec struct {
 	OperatorSpec `json:",inline"`
 
@@ -119,6 +120,25 @@ type NetworkSpec struct {
 	// migration procedure allows to change the network type and the MTU.
 	// +optional
 	Migration *NetworkMigration `json:"migration,omitempty"`
+
+	// AdvancedRouting enables support for additional routing capabilities, like
+	// BGP. When set, it triggers the rollout of the necessary components,
+	// including but not limited to FFR-k8s, enabling the use of these routing
+	// capabilities for the machine network. Upstream operators, like MetalLB
+	// operator, requiring these capabilities may rely or automatically set this
+	// flag. Network plugins may either not leverage any advanced routing
+	// capability related to this setting, may honor this configuration without
+	// any aditional specific configuration or, like ovn-kubernetes, require
+	// additional enablement through their own specific configuration. Refer to
+	// their respective documentation and configuration options. Allowed values
+	// are "Enabled", "Disabled" and ommited. When omitted, this means the user
+	// has no opinion and the platform is left to choose reasonable defaults.
+	// These defaults are subject to change over time. The current default is
+	// "Disabled".
+	// +openshift:enable:FeatureGate=BGP
+	// +kubebuilder:validation:Enum="";Enabled;Disabled
+	// +optional
+	AdvancedRouting string `json:"advancedRouting,omitempty"`
 }
 
 // NetworkMigrationMode is an enumeration of the possible mode of the network migration
@@ -433,6 +453,18 @@ type OVNKubernetesConfig struct {
 	// fields within ipv4 for details of default values.
 	// +optional
 	IPv6 *IPv6OVNKubernetesConfig `json:"ipv6,omitempty"`
+
+	// routeAdvertisements determines the capability of advertising cluster
+	// network routes with BGP. This capability is configured through the
+	// ovn-kubernetes RouteAdvertisements CRD. Requires global network
+	// AdvancedRouting to be enabled. Allowed values are "Enabled", "Disabled"
+	// and ommited. When omitted, this means the user has no opinion and the
+	// platform is left to choose reasonable defaults. These defaults are
+	// subject to change over time. The current default is "Disabled".
+	// +openshift:enable:FeatureGate=BGP
+	// +kubebuilder:validation:Enum="";Enabled;Disabled
+	// +optional
+	RouteAdvertisements string `json:"routeAdvertisements,omitempty"`
 }
 
 type IPv4OVNKubernetesConfig struct {

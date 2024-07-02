@@ -6,6 +6,7 @@ metadata:
     api.openshift.io/merged-by-featuregates: "true"
     include.release.openshift.io/ibm-cloud-managed: "true"
     include.release.openshift.io/self-managed-high-availability: "true"
+    release.openshift.io/feature-set: CustomNoUpgrade
   name: networks.operator.openshift.io
 spec:
   group: operator.openshift.io
@@ -157,6 +158,26 @@ spec:
                       type: string
                   type: object
                 type: array
+              advancedRouting:
+                description: AdvancedRouting enables support for additional routing
+                  capabilities, like BGP. When set, it triggers the rollout of the
+                  necessary components, including but not limited to FFR-k8s, enabling
+                  the use of these routing capabilities for the machine network. Upstream
+                  operators, like MetalLB operator, requiring these capabilities may
+                  rely or automatically set this flag. Network plugins may either
+                  not leverage any advanced routing capability related to this setting,
+                  may honor this configuration without any aditional specific configuration
+                  or, like ovn-kubernetes, require additional enablement through their
+                  own specific configuration. Refer to their respective documentation
+                  and configuration options. Allowed values are "Enabled", "Disabled"
+                  and ommited. When omitted, this means the user has no opinion and
+                  the platform is left to choose reasonable defaults. These defaults
+                  are subject to change over time. The current default is "Disabled".
+                enum:
+                - ""
+                - Enabled
+                - Disabled
+                type: string
               clusterNetwork:
                 description: clusterNetwork is the IP address pool to use for pod
                   IPs. Some network providers, e.g. OpenShift SDN, support multiple
@@ -549,6 +570,20 @@ spec:
                               messages, e.g. "kern". Default is "local0"
                             type: string
                         type: object
+                      routeAdvertisements:
+                        description: routeAdvertisements determines the capability
+                          of advertising cluster network routes with BGP. This capability
+                          is configured through the ovn-kubernetes RouteAdvertisements
+                          CRD. Requires global network AdvancedRouting to be enabled.
+                          Allowed values are "Enabled", "Disabled" and ommited. When
+                          omitted, this means the user has no opinion and the platform
+                          is left to choose reasonable defaults. These defaults are
+                          subject to change over time. The current default is "Disabled".
+                        enum:
+                        - ""
+                        - Enabled
+                        - Disabled
+                        type: string
                       v4InternalSubnet:
                         description: v4InternalSubnet is a v4 subnet used internally
                           by ovn-kubernetes in case the default one is being already
@@ -842,6 +877,11 @@ spec:
                 type: boolean
             type: object
             x-kubernetes-validations:
+            - message: RouteAdvertisements cannot be Enabled if AdvancedRouting is
+                not Enabled
+              rule: self.advancedRouting == 'Enabled' || !has(self.defaultNetwork.ovnKubernetesConfig)
+                || self.defaultNetwork.ovnKubernetesConfig.routeAdvertisements !=
+                'Enabled'
             - message: invalid value for IPForwarding, valid values are 'Restricted'
                 or 'Global'
               rule: '!has(self.defaultNetwork) || !has(self.defaultNetwork.ovnKubernetesConfig)

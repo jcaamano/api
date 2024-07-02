@@ -29475,6 +29475,10 @@
             "$ref": "#/definitions/com.github.openshift.api.operator.v1.AdditionalNetworkDefinition"
           }
         },
+        "advancedRouting": {
+          "description": "AdvancedRouting enables support for additional routing capabilities, like BGP. When set, it triggers the rollout of the necessary components, including but not limited to FFR-k8s, enabling the use of these routing capabilities for the machine network. Upstream operators, like MetalLB operator, requiring these capabilities may rely or automatically set this flag. Network plugins may either not leverage any advanced routing capability related to this setting, may honor this configuration without any aditional specific configuration or, like ovn-kubernetes, require additional enablement through their own specific configuration. Refer to their respective documentation and configuration options. Allowed values are \"Enabled\", \"Disabled\" and ommited. When omitted, this means the user has no opinion and the platform is left to choose reasonable defaults. These defaults are subject to change over time. The current default is \"Disabled\".",
+          "type": "string"
+        },
         "clusterNetwork": {
           "description": "clusterNetwork is the IP address pool to use for pod IPs. Some network providers, e.g. OpenShift SDN, support multiple ClusterNetworks. Others only support one. This is equivalent to the cluster-cidr.",
           "type": "array",
@@ -30009,6 +30013,10 @@
         "policyAuditConfig": {
           "description": "policyAuditConfig is the configuration for network policy audit events. If unset, reported defaults are used.",
           "$ref": "#/definitions/com.github.openshift.api.operator.v1.PolicyAuditConfig"
+        },
+        "routeAdvertisements": {
+          "description": "routeAdvertisements determines the capability of advertising cluster network routes with BGP. This capability is configured through the ovn-kubernetes RouteAdvertisements CRD. Requires global network AdvancedRouting to be enabled. Allowed values are \"Enabled\", \"Disabled\" and ommited. When omitted, this means the user has no opinion and the platform is left to choose reasonable defaults. These defaults are subject to change over time. The current default is \"Disabled\".",
+          "type": "string"
         },
         "v4InternalSubnet": {
           "description": "v4InternalSubnet is a v4 subnet used internally by ovn-kubernetes in case the default one is being already used by something else. It must not overlap with any other subnet being used by OpenShift or by the node network. The size of the subnet must be larger than the number of nodes. The value cannot be changed after installation. Default is 100.64.0.0/16",

@@ -326,6 +326,7 @@ networks.operator.openshift.io:
   Capability: ""
   Category: ""
   FeatureGates:
+  - BGP
   - NetworkLiveMigration
   FilenameOperatorName: network
   FilenameOperatorOrdering: "01"
